@@ -34,7 +34,53 @@ public class ProductController {
     }
 
     // All Rest Endpoint Goes Here
-
+    // GET /products
+    @GetMapping
+    public List<Product> getProducts() {
+        return products;
+    }
+    // GET /products/{id}
+    @GetMapping("/{id}")
+    public Product getProduct(@PathVariable Integer id) {
+        return products.stream()
+                .filter(product -> product.getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+    }
+    // POST /products
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public void addProduct(@RequestBody Product product) {
+        products.add(product);
+    }
+    // PUT /products/{id}
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> updateProduct(@PathVariable Integer id, @RequestBody Product updatedProduct) {
+        Optional<Product> existingProduct = products.stream()
+                .filter(product -> product.getId().equals(id))
+                .findFirst();
+        if (existingProduct.isPresent()) {
+            Product product = existingProduct.get();
+            if(updatedProduct.getName() != null)
+                product.setName(updatedProduct.getName());
+            if(updatedProduct.getPrice() != null)
+                product.setPrice(updatedProduct.getPrice());
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+    // DELETE /products/{id}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable Integer id) {
+        Optional<Product> product = products.stream()
+                .filter(p -> p.getId().equals(id))
+                .findFirst();
+        if (product.isPresent()) {
+            products.remove(product.get());
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
 
 
 }
